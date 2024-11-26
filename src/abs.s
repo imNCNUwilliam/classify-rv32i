@@ -22,6 +22,11 @@ abs:
     bge t0, zero, done
 
     # TODO: Add your own implementation
+    # two's compliment number representation
+    # just deal with negative numbers, perform bitwise NOT operation and then plus 1
+    xori t0, t0, -1
+    addi t0, t0, 1
+    sw t0, 0(a0)
 
 done:
     # Epilogue
