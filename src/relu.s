@@ -32,6 +32,10 @@ loop_start:
     # TODO: Add your own implementation
     # similar to FUNCTION: Absolute Value Converter
     # required to access array elements as well as keep the current max
+    # for each array element `n`, there may be three possible cases
+    # 		n < 0			, in-place modify its value as 0
+    # 		n > 0 && n < current_max, in-place modify its value as current_max
+    #		n > 0 && n > current_max, update current_max
     lw t2, 0(a0)
     blt x0, t2, update_max
     add t2, x0, x0
@@ -41,6 +45,7 @@ loop_start:
 update_max:
     bge t1, t2, finish_update
     add t1, t2, x0
+    j next_loop
 
 finish_update:
     add t2, t1, x0
