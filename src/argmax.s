@@ -24,13 +24,32 @@
 argmax:
     li t6, 1
     blt a1, t6, handle_error
+    # for the valid data input, use register t6 for recording the loop element index
 
     lw t0, 0(a0)
+    li t1, 0 			# by default the returned index is 0
+    add t2, t0, x0 		# by default the current max as 0th array element
+    blt t6, a1, loop_start	# examine the single element input array
+    add a0, t1, x0
+    j exit
 
-    li t1, 0
-    li t2, 1
 loop_start:
     # TODO: Add your own implementation
+    # required to access array elements as well as retermine whether to update the index of current max
+    # Hence, there should be two registers for recording the current max, and the index respectively
+    # keep the index with register t1, and keep the current max with register t2 in my implementation
+    # for each array element `n`, we only need to notice this case
+    # 		n > current_max, update its value as current max and keep its index
+    lw t0, 0(a0)
+    bge t2, t0, next_loop
+    add t2, t0, x0
+    add t1, t6, x0
+
+next_loop:
+    addi t6, t6, 1
+    bne t6, a1, loop_start
+    add a0, t1, x0
+    j exit
 
 handle_error:
     li a0, 36

@@ -37,3 +37,6 @@ It is related to two's compliment number representation. Just deal with negative
 ### FUNCTION: Array ReLU Activation (src/relu.s)
 It is required to access array elements as well as keep the current max. However, I am a little confused that why it can use the same array offset to access every element.
 
+### FUNCTION: Maximum Element First Index Finder (src/argmax.s)
+It is required to access array elements as well as determin whether to update the index of current max. Hence, my implementation should not only keep the current max, but its index.
+
