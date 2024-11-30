@@ -35,5 +35,5 @@ This framework is built with Python, composed of the following five Python files
 It is related to two's compliment number representation. Just deal with negative numbers, my implementation is to perform bitwise NOT operation upon the given negative number and then plus 1.
 
 ### FUNCTION: Array ReLU Activation (src/relu.s)
-It is similar to FUNCTION: Absolute Value Converter, and required to access array elements as well as keep the current max. However, I am a little confused that why it can use the same array offset to access every element.
+It is required to access array elements as well as keep the current max. However, I am a little confused that why it can use the same array offset to access every element.
 

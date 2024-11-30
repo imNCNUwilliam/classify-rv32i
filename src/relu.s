@@ -30,8 +30,7 @@ relu:
 
 loop_start:
     # TODO: Add your own implementation
-    # similar to FUNCTION: Absolute Value Converter
-    # required to access array elements as well as keep the current max
+    # require to access array elements as well as keep the current max
     # for each array element `n`, there may be three possible cases
     # 		n < 0			, in-place modify its value as 0
     # 		n > 0 && n < current_max, in-place modify its value as current_max
