@@ -49,3 +49,28 @@ It is required to access array elements as well as determin whether to update th
                  result = [1]
                          modified workload in TestArgmax specified in `unittest.py`
 
+### Function: Strided Dot Product Calculator (src/dot.s)
+Given two arrays, for the standard dot product, it is required to access elements of two arrays at the same index, and do the multiplication on these two elements. After each index-access, accumulate the product result.
+
+        Example: array0 = [-1, 2, -3, 4, 5, 6, 7, 8, -9]
+                 array1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                 result = [103]
+                         modified workload in TestDot specified in `unittest.py`
+
+For the stride dot product, it may access elements of two arrays with different indices. Hence, two other parameters are needed to specify the strides of arrays. In my implementation, I did not handle the folding cases, so the array access happens on the element out of boundary will cause the error! Besides, we add one another parameter to specify the access times.
+
+        Example: array0 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                 array1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                 access = [3]
+                 stride0 = [1]
+                 stride1 = [3]
+                 result = [30]    which equals to (1 * 1 + 2 * 4 + 3 * 7)
+                         modified workload in TestDot specified in `unittest.py`
+
+For the multiplication in RV32I, I simply use `add` instruction in the implementation. However, negative values in array elements should be dealt with. In my implementation, I would like to always accumulate value of array0 element `a0` into current dot product result each time, so it is required to make sure the value of array1 element `a1` is positive for maintaining the accumulation loops. Therefore, the following check needs to be performed.
+
+        a0 > 0, a1 > 0: do nothing
+        a0 > 0, a1 < 0: negate both a0 and a1
+        a0 < 0, a1 > 0: do nothing
+        a0 < 0, a1 < 0: negate both a0 and a1
+
