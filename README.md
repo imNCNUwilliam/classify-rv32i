@@ -1,7 +1,7 @@
 # ASSIGNMENT 2: CLASSIFY
 
 ## INTRODUCTION
-In Assignment 2, we obtained a framework to execute RV32I with UCB CS61C Venus (RISV-V Simulator). Within the framework, we have to modified to several draft RV32I assemblies used for Artificial Neural Network (ANN) on Handwritten Digit Classification.
+In Assignment 2, we obtained a framework to execute RV32I with UCB CS61C Venus (RISV-V Simulator). Within the framework, we have to modified several draft RV32I assemblies used for Artificial Neural Network (ANN) on Handwritten Digit Classification.
 
 
 ## ABOUT THE FRAMEWORK
@@ -26,7 +26,7 @@ This framework is built with Python, composed of the following five Python files
                           |    which calls the predefined or customized 
                           |    run_venus()
 
-`run_venus()` will spawn a child process to execute Venus with JAVA.
+`run_venus()` will spawn a child process to execute Venus with JAVA. Therefore, when encountering this error `FileNotFoundError: [Errno 2] No such file or directory: 'java'`, it is likely that the JAVA related toolkit has not been installed yet. Please issue `sudo apt install openjdk-11-jdk` to solve the problem.
 
 
 ## MODIFICATION OF RISC-V ASSEMBLY ROUTINES
@@ -34,9 +34,18 @@ This framework is built with Python, composed of the following five Python files
 ### Function: Absolute Value Converter (src/abs.s)
 It is related to two's compliment number representation. Just deal with negative numbers, my implementation is to perform bitwise NOT operation upon the given negative number and then plus 1.
 
-### FUNCTION: Array ReLU Activation (src/relu.s)
+### Function: Array ReLU Activation (src/relu.s)
 It is required to access array elements as well as keep the current max. However, I am a little confused that why it can use the same array offset to access every element.
 
-### FUNCTION: Maximum Element First Index Finder (src/argmax.s)
+        Example: array0 = [1, -2, 3, -4, -5, 6, 7, -8, 9]
+                 result = [1, 0, 3, 0, 0, 6, 7, 0, 9]
+                         modified workload in TestRelu specified in `unittest.py`
+We can specify different workloads in `unittest.py` can be used for function test.
+
+### Function: Maximum Element First Index Finder (src/argmax.s)
 It is required to access array elements as well as determin whether to update the index of current max. Hence, my implementation should not only keep the current max, but its index.
+
+        Example: array0 = [3, 432, 432, 7, -5, 6, 5, -114, 2]
+                 result = [1]
+                         modified workload in TestArgmax specified in `unittest.py`
 
