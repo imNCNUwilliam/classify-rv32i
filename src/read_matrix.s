@@ -76,6 +76,12 @@ read_matrix:
 
     # mul s1, t1, t2   # s1 is number of elements
     # FIXME: Replace 'mul' with your own implementation
+    li s1, 0
+    li t5, 0         # used to keep accumulation loop index
+accumulate:
+    add s1, s1, t1
+    addi t5, t5, 1
+    bne t5, t2, accumulate
 
     slli t3, s1, 2
     sw t3, 24(sp)    # size in bytes

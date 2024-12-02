@@ -88,3 +88,9 @@ This function leverages the above strided dot product function in `src/dot.s`. I
                            109, 134, 169]
                          modified workload in TestMatmul specified in `unittest.py`
 
+Although I finish the implementation, I am not familiar with the function call procedure with stack. I got to understand the theory.
+
+### Function: Binary Matrix File Reader (src/read_matrix.s)
+The draft RV32I assembly is almost complete. What needs to be revised is the number of elements, which is derived from row count and column count, prepared for dynamic memeory allocation. I assume that caller is responsible for validation check that both of the row count and column count are positive integers.
+
+ 
