@@ -79,9 +79,9 @@ read_matrix:
     li s1, 0
     li t5, 0         # used to keep accumulation loop index
 accumulate:
-    add s1, s1, t1
+    add s1, s1, t2
     addi t5, t5, 1
-    bne t5, t2, accumulate
+    bne t5, t1, accumulate
 
     slli t3, s1, 2
     sw t3, 24(sp)    # size in bytes

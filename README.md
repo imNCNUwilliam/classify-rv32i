@@ -93,4 +93,6 @@ Although I finish the implementation, I am not familiar with the function call p
 ### Function: Binary Matrix File Reader (src/read_matrix.s)
 The draft RV32I assembly is almost complete. What needs to be revised is the number of elements, which is derived from row count and column count, prepared for dynamic memeory allocation. I assume that caller is responsible for validation check that both of the row count and column count are positive integers.
 
- 
+### Function: Write a matrix of integers to a binary file (src/write_matrix.s)
+It is similar to `src/read_matrix.s` that the draft RV32I assembly is almost complete. Hence, I adopt the same revision to complete the implementation. Additionally, both of these two functions use the prepared binary file as the input or output matrix. Hence, I do not modified the workload for further validations.
+
