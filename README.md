@@ -74,3 +74,17 @@ For the multiplication in RV32I, I simply use `add` instruction in the implement
         a0 < 0, a1 > 0: do nothing
         a0 < 0, a1 < 0: negate both a0 and a1
 
+### Function: Matrix Multiplication Implementation (src/matmul.s)
+This function leverages the above strided dot product function in `src/dot.s`. It can be observed that `unittests.py` includes `src/dot.s` after TestMatmul test case init. Besides, given two matrix M0 (rows0 x cols0) and M1 (rows1 x cols1), the implementation of the draft RV32I assembly is capable of finishing the multiplication of M0's the 0-th row with M1. Hence, I simply complete the implementation with accessing the next row of M0, as well as returning the offset of M1.
+
+        Example: M0 = [1, 2, 3, 
+                       4, 5, 6, 
+                       7, 8, 10]
+                 M1 = [1, 2, 3, 
+                       4, 5, 6, 
+                       7, 8, 10]
+                 result = [30, 36, 45, 
+                           66, 81, 102, 
+                           109, 134, 169]
+                         modified workload in TestMatmul specified in `unittest.py`
+

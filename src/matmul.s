@@ -56,7 +56,7 @@ matmul:
     li s0, 0 # outer loop counter
     li s1, 0 # inner loop counter
     mv s2, a6 # incrementing result matrix pointer
-    mv s3, a0 # incrementing matrix A pointer, increments durring outer loop
+    mv s3, a0 # incrementing matrix A pointer, increments during outer loop
     mv s4, a3 # incrementing matrix B pointer, increments during inner loop 
     
 outer_loop_start:
@@ -116,6 +116,13 @@ inner_loop_start:
     
 inner_loop_end:
     # TODO: Add your own implementation
+    addi s0, s0, 1
+    li s1, 0
+    mv s4, a3
+    blt s0, a1, inner_loop_start
+
+outer_loop_end:
+    j exit
 
 error:
     li a0, 38
