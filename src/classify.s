@@ -167,6 +167,13 @@ classify:
     lw t0, 0(s3)
     lw t1, 0(s8)
     # mul a0, t0, t1 # FIXME: Replace 'mul' with your own implementation
+    li a0, 0
+    li t2, 0
+accumulate1:
+    add a0, a0, t0
+    addi t2, t2, 1
+    bne t2, t1, accumulate1
+
     slli a0, a0, 2
     jal malloc 
     beq a0, x0, error_malloc
@@ -205,6 +212,12 @@ classify:
     lw t1, 0(s8)
     # mul a1, t0, t1 # length of h array and set it as second argument
     # FIXME: Replace 'mul' with your own implementation
+    li a1, 0
+    mv t2, x0
+accumulate2:
+    add a1, a1, t0
+    addi t2, t2, 1
+    bne t2, t1, accumulate2
     
     jal relu
     
@@ -224,9 +237,16 @@ classify:
     sw a5, 20(sp)
     sw a6, 24(sp)
     
-    lw t0, 0(s3)
-    lw t1, 0(s6)
+    lw t0, 0(s5)
+    lw t1, 0(s8)
     # mul a0, t0, t1 # FIXME: Replace 'mul' with your own implementation
+    li a0, 0
+    mv t2, x0
+accumulate3:
+    add a0, a0, t0
+    addi t2, t2, 1
+    bne t2, t1, accumulate3
+
     slli a0, a0, 2
     jal malloc 
     beq a0, x0, error_malloc
@@ -284,10 +304,16 @@ classify:
     sw a2, 8(sp)
     
     mv a0, s10 # load o array into first arg
-    lw t0, 0(s3)
-    lw t1, 0(s6)
-    mul a1, t0, t1 # load length of array into second arg
+    lw t0, 0(s5)
+    lw t1, 0(s8)
+    # mul a1, t0, t1 # load length of array into second arg
     # FIXME: Replace 'mul' with your own implementation
+    li a1, 0
+    mv t2, x0
+accumulate4:
+    add a1, a1, t1
+    addi t2, t2, 1
+    bne t2, t0, accumulate4
     
     jal argmax
     
@@ -298,9 +324,9 @@ classify:
     lw a2, 8(sp)
     
     addi sp, sp 12
-    
-    mv a0, t0
 
+    mv a0, t0
+    
     # If enabled, print argmax(o) and newline
     bne a2, x0, epilouge
     
@@ -375,6 +401,7 @@ epilouge:
     
     addi sp, sp, 48
     
+    mv a0, t0
     jr ra
 
 error_args:
