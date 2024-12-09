@@ -170,12 +170,12 @@ classify:
     li a0, 0
     li t2, 0
 accumulate1:
-    add a0, a0, t0
+    add a0, a0, t1
     addi t2, t2, 1
-    bne t2, t1, accumulate1
+    bne t2, t0, accumulate1
 
     slli a0, a0, 2
-    jal malloc 
+    jal malloc
     beq a0, x0, error_malloc
     mv s9, a0 # move h to s9
     
@@ -190,6 +190,7 @@ accumulate1:
     lw a5, 0(s8) # move input cols to sixth arg
     
     jal matmul
+    mv s9, a6 # save the returned multiplication result to s9
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -213,13 +214,14 @@ accumulate1:
     # mul a1, t0, t1 # length of h array and set it as second argument
     # FIXME: Replace 'mul' with your own implementation
     li a1, 0
-    mv t2, x0
+    li t2, 0
 accumulate2:
-    add a1, a1, t0
+    add a1, a1, t1
     addi t2, t2, 1
-    bne t2, t1, accumulate2
+    bne t2, t0, accumulate2
     
     jal relu
+    mv s9, a0 # save the returned activation result
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -241,14 +243,14 @@ accumulate2:
     lw t1, 0(s8)
     # mul a0, t0, t1 # FIXME: Replace 'mul' with your own implementation
     li a0, 0
-    mv t2, x0
+    li t2, 0
 accumulate3:
-    add a0, a0, t0
+    add a0, a0, t1
     addi t2, t2, 1
-    bne t2, t1, accumulate3
+    bne t2, t0, accumulate3
 
     slli a0, a0, 2
-    jal malloc 
+    jal malloc
     beq a0, x0, error_malloc
     mv s10, a0 # move o to s10
     
@@ -263,6 +265,7 @@ accumulate3:
     lw a5, 0(s8) # move h cols to sixth arg
     
     jal matmul
+    mv s10, a6 # save the returned multiplication result to s10
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -309,7 +312,7 @@ accumulate3:
     # mul a1, t0, t1 # load length of array into second arg
     # FIXME: Replace 'mul' with your own implementation
     li a1, 0
-    mv t2, x0
+    li t2, 0
 accumulate4:
     add a1, a1, t1
     addi t2, t2, 1

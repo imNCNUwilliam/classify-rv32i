@@ -61,8 +61,6 @@ matmul:
     
 outer_loop_start:
     #s0 is going to be the loop counter for the rows in A
-    li s1, 0
-    mv s4, a3
     blt s0, a1, inner_loop_start
 
     j outer_loop_end
@@ -108,8 +106,7 @@ inner_loop_start:
     sw t0, 0(s2)
     addi s2, s2, 4 # Incrememtning pointer for result matrix
     
-    li t1, 4
-    add s4, s4, t1 # incrememtning the column on Matrix B
+    addi s4, s4, 4 # incrememtning the column on Matrix B
     
     addi s1, s1, 1
     j inner_loop_start

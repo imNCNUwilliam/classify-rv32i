@@ -92,7 +92,7 @@ This function leverages the above strided dot product function in `src/dot.s`. I
                        109, 134, 169]
                      modified workload in TestMatmul specified in `unittest.py`
 
-Although I finish the implementation, I am not familiar with the function call procedure with stack. I got to understand its operations.
+Function call procedures with stack are involved from the following implementations. I describe what I know about the function call procedure later.
 
 ### Function: Binary Matrix File Reader (src/read_matrix.s)
 The draft RV32I assembly is almost complete. What needs to be revised is the number of elements, which is derived from row count and column count, prepared for dynamic memory allocation. I assume that caller is responsible for validation checks that both of the row count and column count are positive integers.
@@ -117,4 +117,64 @@ Therefore, in the draft RV32I assembly of this Neural Network Classifier, it mos
                  argmax(o)
 
 The draft RV32I assembly almost complete the implementation with these fundamental function calls, so what should be revised is the substitutions of several `mul` instructions to RV32I instructions? Similarly, I assume that caller is responsible for checking the validation of both the two counts. Besides, the other test case for `Two classifications` is finished in the same time?
+
+#### debug route 1: anatomy of the input and output matrices
+I would like to observe input and output matrices, and then try aforementioned stages to obtain the result as well as compare the workload result. However, input and output matrices for this Neural Network Classifier are all binary files, but `hexdump` tool can be used to view their contents. Following are the matrices for workloads classify-1 and classify-2. Assumed that the binary file is stored with 32-bit little-endian format, the binary file can be decoded as the corresponding integer arrays.
+
+          :classify-rv32i$ hexdump tests/classify-1/input.bin
+          0000000 0003 0000 0001 0000 0001 0000 0001 0000
+          0000010 0001 0000                              
+          0000014
+                  input[3][1] = {1, 
+                                 1, 
+                                 1}
+          :classify-rv32i$ hexdump tests/classify-1/m0.bin
+          0000000 0003 0000 0003 0000 0001 0000 0002 0000
+          0000010 0003 0000 0004 0000 0005 0000 0006 0000
+          0000020 0007 0000 0008 0000 0009 0000          
+          000002c
+                  m0[3][3] = {1, 2, 3
+                              4, 5, 6,
+                              7, 8, 9}
+          :classify-rv32i$ hexdump tests/classify-1/m1.bin
+          0000000 0003 0000 0003 0000 0001 0000 0003 0000
+          0000010 0005 0000 0007 0000 0009 0000 000b 0000
+          0000020 000d 0000 000f 0000 0011 0000          
+          000002c
+                  m1[3][3] = {1, 3, 5
+                              7, 9, 11,
+                              13, 15, 17}
+          :classify-rv32i$ hexdump tests/classify-1/reference.bin
+          0000000 0003 0000 0001 0000 00ab 0000 01b9 0000
+          0000010 02c7 0000                              
+          0000014
+                  reference[3][1] = {171, 
+                                     441, 
+                                     711}
+        --------------------------------------------------------------
+          Stage 1. h = matmul(m0, input)
+                  h[3][1] = {6, 
+                             15, 
+                             24}
+          Stage 2. h = relu(h)
+                  h'[3][1] = {6, 
+                              15, 
+                              24}
+          Stage 1. o = matmul(m1, h')
+                  o[3][1] = {171, 
+                             441, 
+                             711}  ... identical to reference[3][1]
+
+I tried substituting input and output matrices into the corresponding fundamental function workloads, such as matmul(), relu(), argmax(), read_matrix(), write_matrix(). All can pass the test correctly. Therefore, I thought that input and output are not the problem cause.
+
+#### debug route 2: function call procedures
+Why function calls? Real world applications are often divided into several fundamental functions for code reuses and collaboration among engineers. On the other hand, the amount of registers in the microprocessor is limited. Hence, when all the object codes are linked into one executable, programmer should avoid the register contents be modified during function call procedures. However, it is a little impractical to require programmers to use or not to use certain registers. Therefore, the most common solution is using the stack frame. Following are the function call procedures what I know.
+ 
+        1. At the function entry region, create new stack frame in memory. Then, save certain register contents into the stack frame.
+        2. Then, these registers can be used arbitrarily in this function main body.
+        3. At the function exit region, restore these register contents from the saved stack frame. Then, free the stack frame.
+
+In the function call procedure, which registers be saved and restored is depends on the body of this function implementation, i.e., used registers in this function body. Currently, I have not found problem causes related to function call procedures.
+
+#### debug route 3: Venus Debugger
 
