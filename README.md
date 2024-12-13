@@ -119,7 +119,7 @@ Therefore, in the draft RV32I assembly of this Neural Network Classifier, it mos
 The draft RV32I assembly almost complete the implementation with these fundamental function calls, so what should be revised is the substitutions of several `mul` instructions to RV32I instructions? Similarly, I assume that caller is responsible for checking the validation of both the two counts. Besides, the other test case for `Two classifications` is finished in the same time?
 
 #### debug route 1: anatomy of the input and output matrices
-I would like to observe input and output matrices, and then try aforementioned stages to obtain the result as well as compare the workload result. However, input and output matrices for this Neural Network Classifier are all binary files, but `hexdump` tool can be used to view their contents. Following are the matrices for workloads classify-1 and classify-2. Assumed that the binary file is stored with 32-bit little-endian format, the binary file can be decoded as the corresponding integer arrays.
+I would like to observe input and output matrices, and then try aforementioned stages to obtain the result as well as compare the workload result. However, input and output matrices for this Neural Network Classifier are all binary files. Nevertheless, `hexdump` tool can be used to view their contents. Following are the matrices for workloads classify-1 and classify-2. Assumed that the binary file is stored with 32-bit little-endian format, the binary file can be decoded as the corresponding integer arrays.
 
           :classify-rv32i$ hexdump tests/classify-1/input.bin
           0000000 0003 0000 0001 0000 0001 0000 0001 0000
@@ -153,28 +153,55 @@ I would like to observe input and output matrices, and then try aforementioned s
                                      711}
         --------------------------------------------------------------
           Stage 1. h = matmul(m0, input)
-                  h[3][1] = {6, 
-                             15, 
-                             24}
-          Stage 2. h = relu(h)
-                  h'[3][1] = {6, 
+                   h[3][1] = {6, 
                               15, 
                               24}
-          Stage 1. o = matmul(m1, h')
-                  o[3][1] = {171, 
-                             441, 
-                             711}  ... identical to reference[3][1]
+          Stage 2. h = relu(h)
+                   h'[3][1] = {6, 
+                               15, 
+                               24}
+          Stage 3. o = matmul(m1, h')
+                   o[3][1] = {171, 
+                              441, 
+                              711}  ... identical to reference[3][1]
+          Stage 4. o' = argmax(o) = 2  ... classification as type 2
 
-I tried substituting input and output matrices into the corresponding fundamental function workloads, such as matmul(), relu(), argmax(), read_matrix(), write_matrix(). All can pass the test correctly. Therefore, I thought that input and output are not the problem cause.
+I tried substituting input and output matrices into the corresponding fundamental function workloads within `unittests.py`, such as matmul(), relu(), argmax(), read_matrix(), write_matrix(). All can pass the function tests correctly. Therefore, I thought that input and output are not the problem cause.
 
 #### debug route 2: function call procedures
-Why function calls? Real world applications are often divided into several fundamental functions for code reuses and collaboration among engineers. On the other hand, the amount of registers in the microprocessor is limited. Hence, when all the object codes are linked into one executable, programmer should avoid the register contents be modified during function call procedures. However, it is a little impractical to require programmers to use or not to use certain registers. Therefore, the most common solution is using the stack frame. Following are the function call procedures what I know.
+Why function calls? Real world applications are often divided into several fundamental functions for code reuses and collaboration among engineers. On the other hand, the amount of registers in the microprocessor is limited. Hence, when all the object codes are linked into one executable, programmer should avoid the register contents being modified during function call procedures. However, it is impractical to require programmers to use or not to use certain registers. Therefore, the most common solution is using the stack frame. Following are the function call procedures what I know.
  
-        1. At the function entry region, create new stack frame in memory. Then, save certain register contents into the stack frame.
-        2. Then, these registers can be used arbitrarily in this function main body.
-        3. At the function exit region, restore these register contents from the saved stack frame. Then, free the stack frame.
+        Step 1. At the function entry region. 
+                The callee function will create new stack frame in memory, 
+                and save certain register contents into this stack frame.
+        Step 2. During the callee function main body. 
+                These saved registers can be used arbitrarily.
+        Step 3. At the function exit region. 
+                The callee function will restore these register contents 
+                from the saved stack frame. Then, free the stack frame.
 
-In the function call procedure, which registers be saved and restored is depends on the body of this function implementation, i.e., used registers in this function body. Currently, I have not found problem causes related to function call procedures.
+In the function call procedure, which registers should be saved and restored is depends on the body of the callee function implementation.
 
 #### debug route 3: Venus Debugger
+According to the introduction of [UCB CS61C Lab3](https://cs61c.org/fa24/labs/lab03/), Venus Debugger provides an online / offline debug GUI for tracing the elements of computer architectures during one RISC-V assembly execution. I use the offline Venus debug GUI to find the problem cause with the following settings.
+
+        Setting 1. Launch the Venus as a local server with default port 6161. 
+                   To access local RISC-V assemblies, LOCAL_DIR should be 
+                   specified for the local directory with RISC-V assemblies. 
+                   #java -jar <PATH_OF_VENUS> -dm <LOCAL_DIR>
+        Setting 2. Launch the browser to link to the Venus offline Debug GUI. 
+                   Specify the [URI](http://localhost:6161/venus).
+        Setting 3. Access the local RISC-V assemblies with the GUI. 
+                   The local RISC-V assemblies are allowable to be access 
+                   after LOCAL_DIR be mounted with issuing the command in GUI. 
+                   #mount local <REMOTE_DIR> 
+                   This command will create <REMOTE_DIR> for mounting the 
+                   <LOCAL_DIR>. The password of Venus should be provided.
+        Setting 4. Now, the <REMOTE_DIR> will be created in Venus GUI. 
+                   For this function test framework, the assemblies often use 
+                   relative file path, I suggest change the working directory 
+                   into `test-src/` for executing the executable, or you may 
+                   encounter some file read failure.
+
+To debug the function test for `classify`, I found out that the binary file paths for input and output matrix are missing in the generated executables in `test-src/`. During its Workload Specify procedure in `unittests.py`, it is missing one statement to set up the `args`. Because methods for Workload Specify are defined in `framework.py`, I found that method `_input_args()` can be used in this case.
 
