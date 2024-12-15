@@ -609,6 +609,7 @@ class TestClassify(unittest.TestCase):
         ]
         silent = len(msg) == 0
         t._input_args(args)
+        t.input_scalar("a0", 5)
         t.input_scalar("a2", 1 if silent else 0)
         t.call("classify")
         t.check_scalar("a0", classification)

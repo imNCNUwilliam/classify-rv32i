@@ -52,9 +52,9 @@ finish_update:
 
 next_loop:
     addi t0, t0, 1
-#    addi a0, a0, 4
+    addi a0, a0, 4
     bne t0, a1, loop_start
-    j exit
+    jr ra
 
 error:
     li a0, 36          

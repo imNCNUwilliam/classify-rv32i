@@ -31,11 +31,11 @@ argmax:
     add t2, t0, x0 		# by default the current max as 0th array element
     blt t6, a1, loop_start	# examine the single element input array
     add a0, t1, x0
-    j exit
+    jr ra
 
 loop_start:
     # TODO: Add your own implementation
-    # required to access array elements as well as retermine whether to update the index of current max
+    # required to access array elements as well as determine whether to update the index of current max
     # Hence, there should be two registers for recording the current max, and the index respectively
     # keep the index with register t1, and keep the current max with register t2 in my implementation
     # for each array element `n`, we only need to notice this case
@@ -43,13 +43,14 @@ loop_start:
     lw t0, 0(a0)
     bge t2, t0, next_loop
     add t2, t0, x0
-    add t1, t6, x0
+    addi t1, t6, -1 
 
 next_loop:
     addi t6, t6, 1
-    bne t6, a1, loop_start
+    addi a0, a0, 4
+    bge a1, t6, loop_start
     add a0, t1, x0
-    j exit
+    jr ra
 
 handle_error:
     li a0, 36

@@ -40,7 +40,7 @@ As mentioned in INTRODUCTION, these RV32I assemblies aim to provide the function
 It is related to two's compliment number representation. Just deal with negative numbers, my implementation is to perform bitwise NOT operation upon the given negative number and then plus 1.
 
 ### Function: Array ReLU Activation (src/relu.s)
-It is required to access array elements as well as keep the current max. However, I am a little confused that why it can use the same array offset to access every element.
+It is required to access array elements as well as keep the current max.
 
         Example: array0 = [1, -2, 3, -4, -5, 6, 7, -8, 9]
                  result = [1, 0, 3, 0, 0, 6, 7, 0, 9]
@@ -180,7 +180,7 @@ Why function calls? Real world applications are often divided into several funda
                 The callee function will restore these register contents 
                 from the saved stack frame. Then, free the stack frame.
 
-In the function call procedure, which registers should be saved and restored is depends on the body of the callee function implementation.
+In the function call procedure, which registers should be saved and restored is depends on the body of the callee function implementation. Besides, the caller function should use `jal` instruction to enter the callee function, and the callee function should use `jr ra` instruction to return to the caller function. I am delighted to learn the difference between `jr ra` and `j exit`, where `j exit` will never return to the caller function, and stop the function call procedures.
 
 #### debug route 3: Venus Debugger
 According to the introduction of [UCB CS61C Lab3](https://cs61c.org/fa24/labs/lab03/), Venus Debugger provides an online / offline debug GUI for tracing the elements of computer architectures during one RISC-V assembly execution. I use the offline Venus debug GUI to find the problem cause with the following settings.

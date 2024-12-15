@@ -190,7 +190,6 @@ accumulate1:
     lw a5, 0(s8) # move input cols to sixth arg
     
     jal matmul
-    mv s9, a6 # save the returned multiplication result to s9
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -221,7 +220,6 @@ accumulate2:
     bne t2, t0, accumulate2
     
     jal relu
-    mv s9, a0 # save the returned activation result
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -265,7 +263,6 @@ accumulate3:
     lw a5, 0(s8) # move h cols to sixth arg
     
     jal matmul
-    mv s10, a6 # save the returned multiplication result to s10
     
     lw a0, 0(sp)
     lw a1, 4(sp)
@@ -404,7 +401,6 @@ epilouge:
     
     addi sp, sp, 48
     
-    mv a0, t0
     jr ra
 
 error_args:
