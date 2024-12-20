@@ -168,6 +168,63 @@ I would like to observe input and output matrices, and then try aforementioned s
 
 I tried substituting input and output matrices into the corresponding fundamental function workloads within `unittests.py`, such as matmul(), relu(), argmax(), read_matrix(), write_matrix(). All can pass the function tests correctly. Therefore, I thought that input and output are not the problem cause.
 
+          :classify-rv32i$ hexdump tests/classify-3/input.bin
+          0000000 0004 0000 0001 0000 0001 0000 0002 0000
+          0000010 0003 0000 0004 0000                    
+          0000018
+                  input[4][1] = {1, 
+                                 2, 
+                                 3,
+                                 4}
+          :classify-rv32i$ hexdump tests/classify-3/m0.bin
+          0000000 0003 0000 0004 0000 ffff ffff fffe ffff
+          0000010 0003 0000 0004 0000 fffb ffff 0006 0000
+          0000020 fff9 ffff 0008 0000 0009 0000 fff6 ffff
+          0000030 000b 0000 fff4 ffff                    
+          0000038
+                  m0[3][4] = {-1, -2, 3, 4, 
+                              -5, 6, -7, 8, 
+                              9, -10, 11, -12}
+          :classify-rv32i$ hexdump tests/classify-3/m1.bin
+          0000000 0005 0000 0003 0000 0001 0000 fffd ffff
+          0000010 0004 0000 002e 0000 fffe ffff fffb ffff
+          0000020 0002 0000 ffc2 ffff 0000 0000 0001 0000
+          0000030 0003 0000 000d 0000 001a 0000 fff9 ffff
+          0000040 0022 0000                              
+          0000044
+                  m1[5][3] = {1, -3, 4, 
+                              46, -2, -5, 
+                              2, -62, 0, 
+                              1, 3, 13, 
+                              26, -7, 34}
+          :classify-rv32i$ hexdump tests/classify-3/reference.bin
+          0000000 0005 0000 0001 0000 ffde ffff 0374 0000
+          0000010 fbcc ffff 004a 0000 018a 0000          
+          000001c
+                  reference[5][1] = {-34, 
+                                     884, 
+                                     -1076, 
+                                     74, 
+                                     394}
+        --------------------------------------------------------------
+          Stage 1. h = matmul(m0, input)
+                   h[3][1] = {20, 
+                              18, 
+                              -26}
+          Stage 2. h = relu(h)
+                   h'[3][1] = {20, 
+                               20, 
+                               0}
+          Stage 3. o = matmul(m1, h')
+                   o[5][1] = {-40, 
+                              880, 
+                              -1200, 
+                              80, 
+                              380}  ... identical to reference[5][1]
+          Stage 4. o' = argmax(o) = 1  ... classification as type 1
+
+I also observe input and output matrices with `hexdump` tool. The above are the matrices for workloads classify-3. I found bugs in `src/dot.s` for not handling the zero sub-dot cases, and `src/relu.s` for misunderstanding its definition.
+
 #### debug route 2: function call procedures
 Why function calls? Real world applications are often divided into several fundamental functions for code reuses and collaboration among engineers. On the other hand, the amount of registers in the microprocessor is limited. Hence, when all the object codes are linked into one executable, programmer should avoid the register contents being modified during function call procedures. However, it is impractical to require programmers to use or not to use certain registers. Therefore, the most common solution is using the stack frame. Following are the function call procedures what I know.
  

@@ -40,6 +40,7 @@ loop_start:
     lw t2, 0(a0)		# load the first input array element in register t2
     lw t3, 0(a1)		# load the second input array element in register t3
     addi t1, t1, 1
+    blt a2, t1, loop_end
 multiply:
     beqz t2, loop_start		# this element product can be omitted
     beqz t3, loop_start		# this element product can be omitted
