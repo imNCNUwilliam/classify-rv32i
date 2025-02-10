@@ -29,7 +29,7 @@ argmax:
     lw t0, 0(a0)
     li t1, 0 			# by default the returned index is 0
     add t2, t0, x0 		# by default the current max as 0th array element
-    blt t6, a1, loop_start	# examine the single element input array
+    blt t6, a1, next_loop	# examine the single element input array
     add a0, t1, x0
     jr ra
 

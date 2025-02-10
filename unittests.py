@@ -636,6 +636,9 @@ class TestClassify(unittest.TestCase):
     def test_classify_3_print(self):
         self.run_classify(test_dir="../tests/classify-3", classification=1, msg="1")
 
+    def test_classify_4_print(self):
+        self.run_classify(test_dir="../tests/classify-4", classification=48)
+
     def test_classify_not_enough_args(self):
         t = self.make_test()
         t.input_scalar("a2", 1)
