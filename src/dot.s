@@ -42,8 +42,8 @@ loop_start:
     addi t1, t1, 1
     blt a2, t1, loop_end
 multiply:
-    beqz t2, loop_start		# this element product can be omitted
-    beqz t3, loop_start		# this element product can be omitted
+    beqz t2, skip		# this element product can be omitted
+    beqz t3, skip		# this element product can be omitted
     li t4, 0			# record the accumulation loop in register t4
 
     # always accumulate value of register t2 into current dot product result in register t0
@@ -60,6 +60,7 @@ accumulate:
 
     bge t1, a2, loop_end
     # TODO: Add your own implementation
+skip:
     add a0, a0, a3
     add a1, a1, a4
     j loop_start
