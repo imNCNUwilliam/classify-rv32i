@@ -1,7 +1,7 @@
 # ASSIGNMENT 2: CLASSIFY
 
 ## INTRODUCTION
-In Assignment 2, we obtained a framework to execute RV32I with UCB CS61C Venus (RISV-V Simulator). Within the framework, we have to modify several draft RV32I assemblies used for Artificial Neural Network (ANN) on Handwritten Digit Classification.
+In Assignment 2, we obtained a framework to execute RV32I with [UCB CS61C Venus (RISV-V Simulator)](https://venus.cs61c.org/). Within the framework, we have to modify several draft RV32I assemblies used for Artificial Neural Network (ANN) on Handwritten Digit Classification.
 
 
 ## ABOUT THE FRAMEWORK
@@ -14,11 +14,11 @@ This framework is built with Python, composed of the following five Python files
                              \___    tools/check_hashes.py    ___/
                                      convert.py
 
-`test.sh` checks the installed Python version `3` so that the framework can be launched successfully. Then, it will launch the framework with `studenttest.py` for coverage tests, or `unittests.py` for function tests. Regardless of coverage tests or function tests, the common procedure defined in `framework.py` will be followed, i.e., Test Case Init, Workload Specify, and Workload Execute.
+`test.sh` firstly checks the installed Python version `3` so that the framework can be launched successfully. Then, it will launch the framework with `studenttest.py` for coverage tests, or `unittests.py` for function tests. Regardless of coverage tests or function tests, the common procedure defined in `framework.py` will be followed, i.e., Test Case Init, Workload Specify, and Workload Execute.
 
           Procedure           |    class / methods defined in `framework.py`
         ----------------------------------------------------------------------
-          Test Case Init      |    class AssemblyTest
+          Test Case Init      |    the constructor of class AssemblyTest
         ----------------------------------------------------------------------
           Workload Specify    |    several methods in class AssemblyTest
         ----------------------------------------------------------------------
@@ -47,7 +47,7 @@ It is required to access array elements as well as keep the current max.
                          modified workload in TestRelu specified in `unittest.py`
 
 ### Function: Maximum Element First Index Finder (src/argmax.s)
-It is required to access array elements as well as determin whether to update the index of current max. Hence, my implementation should not only keep the current max, but its index.
+It is required to access array elements as well as determine whether to update the index of current max. Hence, my implementation should not only keep the current max, but its index.
 
         Example: array0 = [3, 432, 432, 7, -5, 6, 5, -114, 2]
                  result = [1]
@@ -61,7 +61,7 @@ Given two arrays, for the standard dot product, it is required to access element
                  result = [103]
                          modified workload in TestDot specified in `unittest.py`
 
-For the stride dot product, it may access elements of two arrays with different indices. Hence, two other parameters are needed to specify the strides of arrays. In my implementation, I did not handle the folding cases, so the array access happens on the element out of boundary will cause the error! Besides, we add one another parameter to specify the access times.
+For the stride dot product, it may access elements of two arrays with different indices. Hence, two other parameters are needed to specify the strides of arrays. In my implementation, I did not handle the folding cases, so the array access happens on the element out of boundary will cause the error! Besides, we add one another parameter to specify the access count.
 
         Example: array0 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
                  array1 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -77,6 +77,13 @@ For the multiplication in RV32I, I simply use `add` instruction in the implement
         a0 > 0, a1 < 0: negate both a0 and a1
         a0 < 0, a1 > 0: do nothing
         a0 < 0, a1 < 0: negate both a0 and a1
+
+During each access, if any element of given two arrays has value `0`, this access can be skipped. The below workload is extracted from batch-1 test case of chain-1 workload. I had the wrong skipping flow and struggled to find the bug. The most important lesson I learned from this experience is that each flow design needs to go through the verification test, and we should use the customized workload when the given workload not covering the flow design.
+
+        Example: array0 = [8, -6, 7, 1, -9, -6, 10, 2, 10, 6, -2, 2, -4, -3, 3]
+                 array1 = [-5, -5, 15, 5, 0, 9, -3, 9, 10, 13, 15, -4, 15, 5, 0]
+                 result = [99]
+                         modified workload in TestDot specified in `unittest.py`
 
 ### Function: Matrix Multiplication Implementation (src/matmul.s)
 This function leverages the above strided dot product function in `src/dot.s`. It can be observed that `unittests.py` includes `src/dot.s` after TestMatmul test case init. Besides, given two matrix M0 (rows0 x cols0) and M1 (rows1 x cols1), the implementation of the draft RV32I assembly is capable of finishing the multiplication of M0's the 0-th row with M1. Hence, I simply complete the implementation with accessing the next row of M0, as well as restoring the offset of M1.
@@ -116,7 +123,7 @@ Therefore, in the draft RV32I assembly of this Neural Network Classifier, it mos
         Stage 4. Conclusion.
                  argmax(o)
 
-The draft RV32I assembly almost complete the implementation with these fundamental function calls, so what should be revised is the substitutions of several `mul` instructions to RV32I instructions? Similarly, I assume that caller is responsible for checking the validation of both the two counts. Besides, the other test case for `Two classifications` is finished in the same time?
+The draft RV32I assembly almost complete the implementation with these fundamental function calls, so what should be revised is the substitutions of several `mul` instructions to RV32I instructions. Similarly, I assume that caller is responsible for checking the validation of both the two counts. Besides, the other test case for `Two classifications` is finished in the same time.
 
 #### debug route 1: anatomy of the input and output matrices
 I would like to observe input and output matrices, and then try aforementioned stages to obtain the result as well as compare the workload result. However, input and output matrices for this Neural Network Classifier are all binary files. Nevertheless, `hexdump` tool can be used to view their contents. Following are the matrices for workloads classify-1 and classify-2. Assumed that the binary file is stored with 32-bit little-endian format, the binary file can be decoded as the corresponding integer arrays.
@@ -213,14 +220,14 @@ I tried substituting input and output matrices into the corresponding fundamenta
                               -26}
           Stage 2. h = relu(h)
                    h'[3][1] = {20, 
-                               20, 
+                               18, 
                                0}
           Stage 3. o = matmul(m1, h')
-                   o[5][1] = {-40, 
-                              880, 
-                              -1200, 
-                              80, 
-                              380}  ... identical to reference[5][1]
+                   o[5][1] = {-34, 
+                              884, 
+                              -1076, 
+                              74, 
+                              394}  ... identical to reference[5][1]
           Stage 4. o' = argmax(o) = 1  ... classification as type 1
 
 I also observe input and output matrices with `hexdump` tool. The above are the matrices for workloads classify-3. I found bugs in `src/dot.s` for not handling the zero sub-dot cases, and `src/relu.s` for misunderstanding its definition.
@@ -237,7 +244,7 @@ Why function calls? Real world applications are often divided into several funda
                 The callee function will restore these register contents 
                 from the saved stack frame. Then, free the stack frame.
 
-In the function call procedure, which registers should be saved and restored is depends on the body of the callee function implementation. Besides, the caller function should use `jal` instruction to enter the callee function, and the callee function should use `jr ra` instruction to return to the caller function. I am delighted to learn the difference between `jr ra` and `j exit`, where `j exit` will never return to the caller function, and stop the function call procedures.
+In the function call procedure, which registers should be saved and restored is depends on the body of the callee function implementation. Besides, the caller function should use `jal` instruction to enter the callee function, and the callee function should use `jr ra` instruction to return to the caller function. I am delighted to learn the difference between `jr ra` and `j exit`, where `j exit` will never return to the caller function, and thus stop the function call procedures.
 
 #### debug route 3: Venus Debugger
 According to the introduction of [UCB CS61C Lab3](https://cs61c.org/fa24/labs/lab03/), Venus Debugger provides an online / offline debug GUI for tracing the elements of computer architectures during one RISC-V assembly execution. I use the offline Venus debug GUI to find the problem cause with the following settings.
@@ -247,7 +254,7 @@ According to the introduction of [UCB CS61C Lab3](https://cs61c.org/fa24/labs/la
                    specified for the local directory with RISC-V assemblies. 
                    #java -jar <PATH_OF_VENUS> -dm <LOCAL_DIR>
         Setting 2. Launch the browser to link to the Venus offline Debug GUI. 
-                   Specify the [URI](http://localhost:6161/venus).
+                   Navigate to http://localhost:6161/venus with your brower.
         Setting 3. Access the local RISC-V assemblies with the GUI. 
                    The local RISC-V assemblies are allowable to be access 
                    after LOCAL_DIR be mounted with issuing the command in GUI. 
@@ -259,6 +266,20 @@ According to the introduction of [UCB CS61C Lab3](https://cs61c.org/fa24/labs/la
                    relative file path, I suggest change the working directory 
                    into `test-src/` for executing the executable, or you may 
                    encounter some file read failure.
+
+        Example Usage: Interactive between terminal and the browser. 
+                   (terminal) // change directory to classify-rv32i
+                   (terminal) # java -jar tools/venus.jar -dm .
+                   (terminal) // notice the shown venus password
+       (Venus GUI in browser) // Enter the GUI `Terminal` tab
+       (browser website line) http://localhost:6161/venus
+       (Venus GUI in browser) # mount local labs
+       (Venus GUI in browser) // input venus password in prompt
+       (Venus GUI in browser) # cd labs/test-src
+       (Venus GUI in browser) // switch the GUI to `Editor` tab
+       (Venus GUI in browser) # edit test_dot_standard.s
+       (Venus GUI in browser) // switch the GUI to `Simulator` tab
+       (Venus GUI in browser) // Observe the RV32I program execution now!
 
 To debug the function test for `classify`, I found out that the binary file paths for input and output matrix are missing in the generated executables in `test-src/`. During its Workload Specify procedure in `unittests.py`, it is missing one statement to set up the `args`. Because methods for Workload Specify are defined in `framework.py`, I found that method `_input_args()` can be used in this case.
 
